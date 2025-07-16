@@ -1,6 +1,6 @@
 // === State ===
 const BASE = "https://fsa-puppy-bowl.herokuapp.com/api";
-const COHORT = "/2505-ChristianO"; // Make sure to change this!
+const COHORT = "/2505-CHRISTIAN"; // Make sure to change this!
 const API = BASE + COHORT;
 let players = [];
 let selectedPlayer;
@@ -18,6 +18,25 @@ const getPlayers = async () => {
   }
 };
 
+const removePlayer = async (id) => {
+  try {
+    const response = await fetch(API + "/players/" + id, {
+      method: "DELETE",
+      });
+    if (response.ok) {
+      players = players.filter((player) => player.id !== id);
+    if (selectedPlayer && selectedPlayer.id === id) {
+      selectedPlayer = null;
+    }
+      render();
+    } else {
+      console.error("Failed to remove player:", response.statusText);
+    } 
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 const playerDetails = () => {
   if (!selectedPlayer) {
     const $p = document.createElement("p");
@@ -32,7 +51,12 @@ const playerDetails = () => {
         <p>Team: ${selectedPlayer.teamId}</p>
         <p>Status: ${selectedPlayer.status}</p>
         <img src = "${selectedPlayer.imageUrl}" alt = "${selectedPlayer.name}"/>
+        <button>Remove Player</button>
         `;
+        $section.querySelector("button").addEventListener("click", (event) => {  
+    event.preventDefault(); 
+    removePlayer(selectedPlayer.id);  
+        });
   return $section;
 };
 
@@ -78,6 +102,7 @@ const addPlayer = async (event) => {
     console.log(response);
     const data = await response.json();
     console.log(data);
+    await getPlayers();
   } catch (error) {
     console.error("Failed to add player", error);
   }
@@ -86,8 +111,7 @@ const addPlayer = async (event) => {
 const inviteForm = () => {
   const $form = document.createElement("form");
   $form.innerHTML = `
-        <h2>Invite a Player</h2>
-        <form id="form">
+        <h2>Add a Puppy</h2>
             <label>Name</label>
             <input name="name" required placeholder = "Enter player name"/>
             <label>Breed</label>
@@ -96,11 +120,9 @@ const inviteForm = () => {
             <input name="status" required placeholder = "Enter player status"/>
             <label>Profile Picture</label>
             <input name="imageUrl" required placeholder = "Enter image url"/>
-            <button>Invite artist</button>
-        </form>
+            <button>Submit</button>
         `;
   $form.addEventListener("submit", (event) => {
-    event.preventDefault();
     addPlayer(event);
   });
   $form.style.width = "75%";
