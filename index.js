@@ -21,14 +21,14 @@ const getPlayers = async () => {
 
 const getTeams = async () => {
   try {
-    const response = await fetch(API + "/teams")
+    const response = await fetch(API + "/teams");
     const data = await response.json();
     console.log(data.data.teams);
     teams = data.data.teams;
   } catch (error) {
-    console.error("Failed to get teams", error)
+    console.error("Failed to get teams", error);
   }
-}
+};
 
 const removePlayer = async (id) => {
   try {
@@ -55,11 +55,13 @@ const playerDetails = () => {
     $h2.textContent = "Select a player to see details";
     return $h2;
   }
-  const team = teams.find(t => t.id === selectedPlayer.teamId);
+  const team = teams.find((t) => t.id === selectedPlayer.teamId);
   const $section = document.createElement("section");
   $section.classList.add("player-details");
   $section.innerHTML = `
-                 <img src = "${selectedPlayer.imageUrl}" alt = "${selectedPlayer.name}"/>
+                 <img src = "${selectedPlayer.imageUrl}" alt = "${
+    selectedPlayer.name
+  }"/>
 
         <p id = "player-name"><b>Name:</b> ${selectedPlayer.name}</p>
         <p><b>ID:</b> ${selectedPlayer.id}</p>
@@ -132,7 +134,10 @@ const inviteForm = () => {
             <label>Breed</label>
             <input name="breed" required placeholder = "Enter player breed"/>
             <label>Status</label>
-            <input name="status" required placeholder = "Enter player status"/>
+            <select name="Status">
+              <option value="field">Field</option>
+              <option value="bench">Bench</option>
+            </select>
             <label>Profile Picture</label>
             <input name="imageUrl" required placeholder = "Enter image url"/>
             <button>Submit</button>
