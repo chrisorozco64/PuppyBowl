@@ -3,6 +3,7 @@ const BASE = "https://fsa-puppy-bowl.herokuapp.com/api";
 const COHORT = "/2505-CHRISTIAN"; // Make sure to change this!
 const API = BASE + COHORT;
 let players = [];
+let teams = [];
 let selectedPlayer;
 
 // === Components ===
@@ -18,45 +19,59 @@ const getPlayers = async () => {
   }
 };
 
+const getTeams = async () => {
+  try {
+    const response = await fetch(API + "/teams")
+    const data = await response.json();
+    console.log(data.data.teams);
+    teams = data.data.teams;
+  } catch (error) {
+    console.error("Failed to get teams", error)
+  }
+}
+
 const removePlayer = async (id) => {
   try {
     const response = await fetch(API + "/players/" + id, {
       method: "DELETE",
-      });
+    });
     if (response.ok) {
       players = players.filter((player) => player.id !== id);
-    if (selectedPlayer && selectedPlayer.id === id) {
-      selectedPlayer = null;
-    }
+      if (selectedPlayer && selectedPlayer.id === id) {
+        selectedPlayer = null;
+      }
       render();
     } else {
       console.error("Failed to remove player:", response.statusText);
-    } 
+    }
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 const playerDetails = () => {
   if (!selectedPlayer) {
-    const $p = document.createElement("p");
-    $p.textContent = "Select a player to see details";
-    return $p;
+    const $h2 = document.createElement("h2");
+    $h2.textContent = "Select a player to see details";
+    return $h2;
   }
+  const team = teams.find(t => t.id === selectedPlayer.teamId);
   const $section = document.createElement("section");
+  $section.classList.add("player-details");
   $section.innerHTML = `
-        <h2>Name: ${selectedPlayer.name}</h2>
-        <p>ID: ${selectedPlayer.id}</p>
-        <p>Breed: ${selectedPlayer.breed}</p>
-        <p>Team: ${selectedPlayer.teamId}</p>
-        <p>Status: ${selectedPlayer.status}</p>
-        <img src = "${selectedPlayer.imageUrl}" alt = "${selectedPlayer.name}"/>
-        <button>Remove Player</button>
+                 <img src = "${selectedPlayer.imageUrl}" alt = "${selectedPlayer.name}"/>
+
+        <p id = "player-name"><b>Name:</b> ${selectedPlayer.name}</p>
+        <p><b>ID:</b> ${selectedPlayer.id}</p>
+        <p><b>Breed:</b> ${selectedPlayer.breed}</p>
+        <p><b>Team:</b> ${team ? team.name : "No team"}</p>
+        <p><b>Status:</b> ${selectedPlayer.status}</p>
+        <button>Remove From Roster</button>
         `;
-        $section.querySelector("button").addEventListener("click", (event) => {  
-    event.preventDefault(); 
-    removePlayer(selectedPlayer.id);  
-        });
+  $section.querySelector("button").addEventListener("click", (event) => {
+    event.preventDefault();
+    removePlayer(selectedPlayer.id);
+  });
   return $section;
 };
 
@@ -143,10 +158,10 @@ const render = () => {
             <section>
                 <playerDetails></playerDetails>
             </section>
-            <section>
-                <inviteForm></inviteForm>
-            </section>
         </main>
+        <hr>
+        <inviteForm></inviteForm>
+
     `;
   $app.querySelector("playerList").replaceWith(playerList());
   $app.querySelector("playerDetails").replaceWith(playerDetails());
@@ -157,6 +172,7 @@ render();
 
 const init = async () => {
   await getPlayers();
+  await getTeams();
   render();
 };
 
